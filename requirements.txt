@@ -6,4 +6,5 @@ seaborn
 requests
 beautifulsoup4
 scipy
--e .
+dill
+# -e .
