@@ -5,7 +5,7 @@ import numpy as np
 from src.exception import CustomException
 from src.logger import logging
 import dill
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.metrics import r2_score
 
 
@@ -19,7 +19,7 @@ def save_object(obj, file_path):
     except Exception as e:
         raise CustomException(e, sys)
     
-def evaluate_model(X_train, y_train, X_test, y_test,models):
+def evaluate_model(X_train, y_train, X_test, y_test,models,param):
     try:
         logging.info("Evaluating models.")
         report = {}
@@ -27,8 +27,19 @@ def evaluate_model(X_train, y_train, X_test, y_test,models):
         for i in range(len(list(models))):
 
             model = list(models.values())[i]
-            model.fit(X_train, y_train)
+            
+            #Hyperparameter tuning
+            para=param[list(models.keys())[i]]
+            
+            #Applying GridSearchCV for hyperparameter tuning
+            gs = GridSearchCV(model, para, cv=3)
+            gs.fit(X_train, y_train)
+            model.set_params(**gs.best_params_)
+            logging.info(f"Best parameters for {list(models.keys())[i]}: {gs.best_params_}")
 
+            # Training the model
+            model.fit(X_train, y_train)
+            
             y_train_pred = model.predict(X_train)
             y_test_pred = model.predict(X_test)
 
